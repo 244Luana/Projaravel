@@ -15,7 +15,11 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_screen_can_be_rendered()
     {
+<<<<<<< HEAD
         if (! Features::enabled(Features::updatePasswords())) {
+=======
+        if (! Features::enabled(Features::resetPasswords())) {
+>>>>>>> 714b28e (Heroku)
             return $this->markTestSkipped('Password updates are not enabled.');
         }
 
@@ -26,7 +30,11 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_can_be_requested()
     {
+<<<<<<< HEAD
         if (! Features::enabled(Features::updatePasswords())) {
+=======
+        if (! Features::enabled(Features::resetPasswords())) {
+>>>>>>> 714b28e (Heroku)
             return $this->markTestSkipped('Password updates are not enabled.');
         }
 
@@ -43,7 +51,11 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_screen_can_be_rendered()
     {
+<<<<<<< HEAD
         if (! Features::enabled(Features::updatePasswords())) {
+=======
+        if (! Features::enabled(Features::resetPasswords())) {
+>>>>>>> 714b28e (Heroku)
             return $this->markTestSkipped('Password updates are not enabled.');
         }
 
@@ -66,7 +78,11 @@ class PasswordResetTest extends TestCase
 
     public function test_password_can_be_reset_with_valid_token()
     {
+<<<<<<< HEAD
         if (! Features::enabled(Features::updatePasswords())) {
+=======
+        if (! Features::enabled(Features::resetPasswords())) {
+>>>>>>> 714b28e (Heroku)
             return $this->markTestSkipped('Password updates are not enabled.');
         }
 

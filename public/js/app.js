@@ -75,11 +75,21 @@ var require_shared_cjs = __commonJS((exports) => {
   var isGloballyWhitelisted = /* @__PURE__ */ makeMap(GLOBALS_WHITE_LISTED);
   var range = 2;
   function generateCodeFrame(source, start2 = 0, end = source.length) {
+<<<<<<< HEAD
     const lines = source.split(/\r?\n/);
     let count = 0;
     const res = [];
     for (let i = 0; i < lines.length; i++) {
       count += lines[i].length + 1;
+=======
+    let lines = source.split(/(\r?\n)/);
+    const newlineSequences = lines.filter((_, idx) => idx % 2 === 1);
+    lines = lines.filter((_, idx) => idx % 2 === 0);
+    let count = 0;
+    const res = [];
+    for (let i = 0; i < lines.length; i++) {
+      count += lines[i].length + (newlineSequences[i] && newlineSequences[i].length || 0);
+>>>>>>> 714b28e (Heroku)
       if (count >= start2) {
         for (let j = i - range; j <= i + range || end > count; j++) {
           if (j < 0 || j >= lines.length)
@@ -87,8 +97,14 @@ var require_shared_cjs = __commonJS((exports) => {
           const line = j + 1;
           res.push(`${line}${" ".repeat(Math.max(3 - String(line).length, 0))}|  ${lines[j]}`);
           const lineLength = lines[j].length;
+<<<<<<< HEAD
           if (j === i) {
             const pad = start2 - (count - lineLength) + 1;
+=======
+          const newLineSeqLength = newlineSequences[j] && newlineSequences[j].length || 0;
+          if (j === i) {
+            const pad = start2 - (count - (lineLength + newLineSeqLength));
+>>>>>>> 714b28e (Heroku)
             const length = Math.max(1, end > count ? lineLength - pad : end - start2);
             res.push(`   |  ` + " ".repeat(pad) + "^".repeat(length));
           } else if (j > i) {
@@ -96,7 +112,11 @@ var require_shared_cjs = __commonJS((exports) => {
               const length = Math.max(Math.min(end - count, lineLength), 1);
               res.push(`   |  ` + "^".repeat(length));
             }
+<<<<<<< HEAD
             count += lineLength + 1;
+=======
+            count += lineLength + newLineSeqLength;
+>>>>>>> 714b28e (Heroku)
           }
         }
         break;
@@ -637,6 +657,7 @@ var require_reactivity_cjs = __commonJS((exports) => {
   var shallowGet = /* @__PURE__ */ createGetter(false, true);
   var readonlyGet = /* @__PURE__ */ createGetter(true);
   var shallowReadonlyGet = /* @__PURE__ */ createGetter(true, true);
+<<<<<<< HEAD
   var arrayInstrumentations = {};
   ["includes", "indexOf", "lastIndexOf"].forEach((key) => {
     const method = Array.prototype[key];
@@ -662,6 +683,35 @@ var require_reactivity_cjs = __commonJS((exports) => {
       return res;
     };
   });
+=======
+  var arrayInstrumentations = /* @__PURE__ */ createArrayInstrumentations();
+  function createArrayInstrumentations() {
+    const instrumentations = {};
+    ["includes", "indexOf", "lastIndexOf"].forEach((key) => {
+      instrumentations[key] = function(...args) {
+        const arr = toRaw2(this);
+        for (let i = 0, l = this.length; i < l; i++) {
+          track(arr, "get", i + "");
+        }
+        const res = arr[key](...args);
+        if (res === -1 || res === false) {
+          return arr[key](...args.map(toRaw2));
+        } else {
+          return res;
+        }
+      };
+    });
+    ["push", "pop", "shift", "unshift", "splice"].forEach((key) => {
+      instrumentations[key] = function(...args) {
+        pauseTracking();
+        const res = toRaw2(this)[key].apply(this, args);
+        resetTracking();
+        return res;
+      };
+    });
+    return instrumentations;
+  }
+>>>>>>> 714b28e (Heroku)
   function createGetter(isReadonly2 = false, shallow = false) {
     return function get3(target, key, receiver) {
       if (key === "__v_isReactive") {
@@ -762,11 +812,19 @@ var require_reactivity_cjs = __commonJS((exports) => {
       return true;
     }
   };
+<<<<<<< HEAD
   var shallowReactiveHandlers = shared.extend({}, mutableHandlers, {
     get: shallowGet,
     set: shallowSet
   });
   var shallowReadonlyHandlers = shared.extend({}, readonlyHandlers, {
+=======
+  var shallowReactiveHandlers = /* @__PURE__ */ shared.extend({}, mutableHandlers, {
+    get: shallowGet,
+    set: shallowSet
+  });
+  var shallowReadonlyHandlers = /* @__PURE__ */ shared.extend({}, readonlyHandlers, {
+>>>>>>> 714b28e (Heroku)
     get: shallowReadonlyGet
   });
   var toReactive = (value) => shared.isObject(value) ? reactive3(value) : value;
@@ -909,6 +967,7 @@ var require_reactivity_cjs = __commonJS((exports) => {
       return type === "delete" ? false : this;
     };
   }
+<<<<<<< HEAD
   var mutableInstrumentations = {
     get(key) {
       return get$1(this, key);
@@ -976,6 +1035,84 @@ var require_reactivity_cjs = __commonJS((exports) => {
     shallowInstrumentations[method] = createIterableMethod(method, false, true);
     shallowReadonlyInstrumentations[method] = createIterableMethod(method, true, true);
   });
+=======
+  function createInstrumentations() {
+    const mutableInstrumentations2 = {
+      get(key) {
+        return get$1(this, key);
+      },
+      get size() {
+        return size(this);
+      },
+      has: has$1,
+      add,
+      set: set$1,
+      delete: deleteEntry,
+      clear,
+      forEach: createForEach(false, false)
+    };
+    const shallowInstrumentations2 = {
+      get(key) {
+        return get$1(this, key, false, true);
+      },
+      get size() {
+        return size(this);
+      },
+      has: has$1,
+      add,
+      set: set$1,
+      delete: deleteEntry,
+      clear,
+      forEach: createForEach(false, true)
+    };
+    const readonlyInstrumentations2 = {
+      get(key) {
+        return get$1(this, key, true);
+      },
+      get size() {
+        return size(this, true);
+      },
+      has(key) {
+        return has$1.call(this, key, true);
+      },
+      add: createReadonlyMethod("add"),
+      set: createReadonlyMethod("set"),
+      delete: createReadonlyMethod("delete"),
+      clear: createReadonlyMethod("clear"),
+      forEach: createForEach(true, false)
+    };
+    const shallowReadonlyInstrumentations2 = {
+      get(key) {
+        return get$1(this, key, true, true);
+      },
+      get size() {
+        return size(this, true);
+      },
+      has(key) {
+        return has$1.call(this, key, true);
+      },
+      add: createReadonlyMethod("add"),
+      set: createReadonlyMethod("set"),
+      delete: createReadonlyMethod("delete"),
+      clear: createReadonlyMethod("clear"),
+      forEach: createForEach(true, true)
+    };
+    const iteratorMethods = ["keys", "values", "entries", Symbol.iterator];
+    iteratorMethods.forEach((method) => {
+      mutableInstrumentations2[method] = createIterableMethod(method, false, false);
+      readonlyInstrumentations2[method] = createIterableMethod(method, true, false);
+      shallowInstrumentations2[method] = createIterableMethod(method, false, true);
+      shallowReadonlyInstrumentations2[method] = createIterableMethod(method, true, true);
+    });
+    return [
+      mutableInstrumentations2,
+      readonlyInstrumentations2,
+      shallowInstrumentations2,
+      shallowReadonlyInstrumentations2
+    ];
+  }
+  var [mutableInstrumentations, readonlyInstrumentations, shallowInstrumentations, shallowReadonlyInstrumentations] = /* @__PURE__ */ createInstrumentations();
+>>>>>>> 714b28e (Heroku)
   function createInstrumentationGetter(isReadonly2, shallow) {
     const instrumentations = shallow ? isReadonly2 ? shallowReadonlyInstrumentations : shallowInstrumentations : isReadonly2 ? readonlyInstrumentations : mutableInstrumentations;
     return (target, key, receiver) => {
@@ -990,6 +1127,7 @@ var require_reactivity_cjs = __commonJS((exports) => {
     };
   }
   var mutableCollectionHandlers = {
+<<<<<<< HEAD
     get: createInstrumentationGetter(false, false)
   };
   var shallowCollectionHandlers = {
@@ -1000,6 +1138,18 @@ var require_reactivity_cjs = __commonJS((exports) => {
   };
   var shallowReadonlyCollectionHandlers = {
     get: createInstrumentationGetter(true, true)
+=======
+    get: /* @__PURE__ */ createInstrumentationGetter(false, false)
+  };
+  var shallowCollectionHandlers = {
+    get: /* @__PURE__ */ createInstrumentationGetter(false, true)
+  };
+  var readonlyCollectionHandlers = {
+    get: /* @__PURE__ */ createInstrumentationGetter(true, false)
+  };
+  var shallowReadonlyCollectionHandlers = {
+    get: /* @__PURE__ */ createInstrumentationGetter(true, true)
+>>>>>>> 714b28e (Heroku)
   };
   function checkIdentityKeys(target, has2, key) {
     const rawKey = toRaw2(key);
@@ -1096,18 +1246,31 @@ var require_reactivity_cjs = __commonJS((exports) => {
     return createRef(value, true);
   }
   var RefImpl = class {
+<<<<<<< HEAD
     constructor(_rawValue, _shallow = false) {
       this._rawValue = _rawValue;
       this._shallow = _shallow;
       this.__v_isRef = true;
       this._value = _shallow ? _rawValue : convert(_rawValue);
+=======
+    constructor(value, _shallow = false) {
+      this._shallow = _shallow;
+      this.__v_isRef = true;
+      this._rawValue = _shallow ? value : toRaw2(value);
+      this._value = _shallow ? value : convert(value);
+>>>>>>> 714b28e (Heroku)
     }
     get value() {
       track(toRaw2(this), "get", "value");
       return this._value;
     }
     set value(newVal) {
+<<<<<<< HEAD
       if (shared.hasChanged(toRaw2(newVal), this._rawValue)) {
+=======
+      newVal = this._shallow ? newVal : toRaw2(newVal);
+      if (shared.hasChanged(newVal, this._rawValue)) {
+>>>>>>> 714b28e (Heroku)
         this._rawValue = newVal;
         this._value = this._shallow ? newVal : convert(newVal);
         trigger(toRaw2(this), "set", "value", newVal);
@@ -1866,7 +2029,11 @@ function start() {
   onAttributesAdded((el, attrs) => {
     directives(el, attrs).forEach((handle) => handle());
   });
+<<<<<<< HEAD
   let outNestedComponents = (el) => !closestRoot(el.parentElement);
+=======
+  let outNestedComponents = (el) => !closestRoot(el.parentElement, true);
+>>>>>>> 714b28e (Heroku)
   Array.from(document.querySelectorAll(allSelectors())).filter(outNestedComponents).forEach((el) => {
     initTree(el);
   });
@@ -1886,6 +2053,7 @@ function addRootSelector(selectorCallback) {
 function addInitSelector(selectorCallback) {
   initSelectorCallbacks.push(selectorCallback);
 }
+<<<<<<< HEAD
 function closestRoot(el) {
   if (!el)
     return;
@@ -1894,6 +2062,17 @@ function closestRoot(el) {
   if (!el.parentElement)
     return;
   return closestRoot(el.parentElement);
+=======
+function closestRoot(el, includeInitSelectors = false) {
+  if (!el)
+    return;
+  const selectors = includeInitSelectors ? allSelectors() : rootSelectors();
+  if (selectors.some((selector) => el.matches(selector)))
+    return el;
+  if (!el.parentElement)
+    return;
+  return closestRoot(el.parentElement, includeInitSelectors);
+>>>>>>> 714b28e (Heroku)
 }
 function isRoot(el) {
   return rootSelectors().some((selector) => el.matches(selector));
@@ -2032,7 +2211,11 @@ var Alpine = {
   get raw() {
     return raw;
   },
+<<<<<<< HEAD
   version: "3.3.3",
+=======
+  version: "3.3.4",
+>>>>>>> 714b28e (Heroku)
   disableEffectScheduling,
   setReactivityEngine,
   addRootSelector,
@@ -2094,7 +2277,26 @@ magic("store", getStores);
 magic("root", (el) => closestRoot(el));
 
 // packages/alpinejs/src/magics/$refs.js
+<<<<<<< HEAD
 magic("refs", (el) => closestRoot(el)._x_refs || {});
+=======
+magic("refs", (el) => {
+  if (el._x_refs_proxy)
+    return el._x_refs_proxy;
+  el._x_refs_proxy = mergeProxies(getArrayOfRefObject(el));
+  return el._x_refs_proxy;
+});
+function getArrayOfRefObject(el) {
+  let refObjects = [];
+  let currentEl = el;
+  while (currentEl) {
+    if (currentEl._x_refs)
+      refObjects.push(currentEl._x_refs);
+    currentEl = currentEl.parentNode;
+  }
+  return refObjects;
+}
+>>>>>>> 714b28e (Heroku)
 
 // packages/alpinejs/src/magics/$el.js
 magic("el", (el) => el);
@@ -2312,7 +2514,11 @@ function registerTransitionObject(el, setFunction, defaultValue = {}) {
     };
 }
 window.Element.prototype._x_toggleAndCascadeWithTransitions = function(el, value, show, hide) {
+<<<<<<< HEAD
   let clickAwayCompatibleShow = () => requestAnimationFrame(show);
+=======
+  let clickAwayCompatibleShow = show;
+>>>>>>> 714b28e (Heroku)
   if (value) {
     el._x_transition ? el._x_transition.in(show) : clickAwayCompatibleShow();
     return;
